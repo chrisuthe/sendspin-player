@@ -1,0 +1,40 @@
+# Build results
+bin/
+obj/
+publish/
+out/
+
+# .NET
+*.user
+*.userosscache
+*.suo
+*.cache
+*.vspscc
+.vs/
+*.nupkg
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# User settings
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Packaging artifacts
+*.AppImage
+*.deb
+*.rpm
+*.flatpak
