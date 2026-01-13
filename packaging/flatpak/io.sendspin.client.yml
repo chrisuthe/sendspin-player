@@ -15,18 +15,16 @@
 
 app-id: io.sendspin.client
 runtime: org.freedesktop.Platform
-runtime-version: '23.08'
+runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
 
 command: SendspinClient.Linux
 
 # Sandbox permissions
 finish-args:
-  # Display access (X11 and Wayland)
+  # Display access - X11/XWayland required (Avalonia uses XWayland on Wayland desktops)
   - --share=ipc
   - --socket=x11
-  - --socket=wayland
-  - --socket=fallback-x11
 
   # Audio access (PipeWire/PulseAudio)
   - --socket=pulseaudio
