@@ -25,6 +25,7 @@ public sealed class SendspinClientManager : IAsyncDisposable
     private IAudioPipeline? _audioPipeline;
     private SendspinClientService? _client;
     private HttpClient? _httpClient;
+    private CancellationTokenSource? _shutdownCts;
     private string? _lastArtworkUrl;
     private bool _isDisposed;
 
@@ -142,6 +143,7 @@ public sealed class SendspinClientManager : IAsyncDisposable
             // Create HTTP client for artwork fetching
             _httpClient = new HttpClient();
             _httpClient.Timeout = TimeSpan.FromSeconds(10);
+            _shutdownCts = new CancellationTokenSource();
             _lastArtworkUrl = null;
 
             // Create clock synchronizer
@@ -281,6 +283,11 @@ public sealed class SendspinClientManager : IAsyncDisposable
                 _audioPipeline = null;
             }
 
+            // Cancel any in-flight artwork fetches before disposing HttpClient
+            _shutdownCts?.Cancel();
+            _shutdownCts?.Dispose();
+            _shutdownCts = null;
+
             _httpClient?.Dispose();
             _httpClient = null;
             _lastArtworkUrl = null;
@@ -403,7 +410,8 @@ public sealed class SendspinClientManager : IAsyncDisposable
             if (!string.IsNullOrEmpty(artworkUrl) && artworkUrl != _lastArtworkUrl)
             {
                 _lastArtworkUrl = artworkUrl;
-                _ = FetchArtworkAsync(artworkUrl);
+                var token = _shutdownCts?.Token ?? CancellationToken.None;
+                _ = FetchArtworkAsync(artworkUrl, token);
             }
             else if (string.IsNullOrEmpty(artworkUrl) && _lastArtworkUrl != null)
             {
@@ -414,14 +422,19 @@ public sealed class SendspinClientManager : IAsyncDisposable
         }
     }
 
-    private async Task FetchArtworkAsync(string url)
+    private async Task FetchArtworkAsync(string url, CancellationToken ct)
     {
         try
         {
             _logger.LogDebug("Fetching artwork from: {Url}", url);
-            var imageData = await _httpClient!.GetByteArrayAsync(url);
+            var imageData = await _httpClient!.GetByteArrayAsync(url, ct);
             _logger.LogDebug("Artwork fetched: {Size} bytes", imageData.Length);
             ArtworkChanged?.Invoke(this, new ArtworkEventArgs(0, imageData));
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during shutdown - don't log as warning
+            _logger.LogDebug("Artwork fetch cancelled for {Url}", url);
         }
         catch (Exception ex)
         {

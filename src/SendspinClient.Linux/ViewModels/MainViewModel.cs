@@ -24,6 +24,7 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
     private readonly SendspinClientManager? _clientManager;
     private readonly INotificationService? _notificationService;
     private readonly IDiscordRichPresenceService? _discordService;
+    private bool _isDisposed;
 
     #region Observable Properties
 
@@ -231,8 +232,10 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
 
     private void OnServerDiscovered(object? sender, DiscoveredServer server)
     {
+        if (_isDisposed) return;
         Dispatcher.UIThread.Post(() =>
         {
+            if (_isDisposed) return;
             if (!DiscoveredServers.Contains(server))
             {
                 DiscoveredServers.Add(server);
@@ -243,8 +246,10 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
 
     private void OnServerLost(object? sender, DiscoveredServer server)
     {
+        if (_isDisposed) return;
         Dispatcher.UIThread.Post(() =>
         {
+            if (_isDisposed) return;
             DiscoveredServers.Remove(server);
             _logger?.LogInformation("Removed server from list: {Name}", server.Name);
         });
@@ -408,8 +413,10 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
 
     private void OnConnectionStateChanged(object? sender, ConnectionStateEventArgs e)
     {
+        if (_isDisposed) return;
         Dispatcher.UIThread.Post(() =>
         {
+            if (_isDisposed) return;
             IsConnected = e.IsConnected;
             IsConnecting = false;
             ServerName = e.ServerName ?? string.Empty;
@@ -437,8 +444,10 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
 
     private void OnTrackChanged(object? sender, TrackMetadataEventArgs e)
     {
+        if (_isDisposed) return;
         Dispatcher.UIThread.Post(() =>
         {
+            if (_isDisposed) return;
             TrackTitle = string.IsNullOrWhiteSpace(e.Title) ? "No Track Playing" : e.Title;
             Artist = e.Artist ?? string.Empty;
             Album = e.Album ?? string.Empty;
@@ -455,8 +464,10 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
 
     private void OnArtworkChanged(object? sender, ArtworkEventArgs e)
     {
+        if (_isDisposed) return;
         Dispatcher.UIThread.Post(() =>
         {
+            if (_isDisposed) return;
             // Dispose old bitmap to free resources
             AlbumArtwork?.Dispose();
 
@@ -484,8 +495,10 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
 
     private void OnPlaybackStateChanged(object? sender, PlaybackStateEventArgs e)
     {
+        if (_isDisposed) return;
         Dispatcher.UIThread.Post(() =>
         {
+            if (_isDisposed) return;
             IsPaused = !e.IsPlaying;
             _logger?.LogDebug("Playback state updated: IsPaused={IsPaused}", IsPaused);
         });
@@ -527,6 +540,9 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
         if (_clientManager != null)
         {
             _clientManager.ServerDiscovered -= OnServerDiscovered;

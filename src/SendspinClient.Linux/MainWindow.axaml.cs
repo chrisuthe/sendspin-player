@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 
 namespace SendspinClient.Linux;
@@ -14,5 +15,17 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    /// <summary>
+    /// Called when the window is closing. Ensures proper cleanup of async resources.
+    /// </summary>
+    protected override async void OnClosing(WindowClosingEventArgs e)
+    {
+        if (DataContext is IAsyncDisposable vm)
+        {
+            await vm.DisposeAsync();
+        }
+        base.OnClosing(e);
     }
 }
