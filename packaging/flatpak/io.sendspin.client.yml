@@ -50,8 +50,9 @@ modules:
   - name: sendspin
     buildsystem: simple
     build-commands:
-      # Create app directory
+      # Create app directories
       - mkdir -p /app/lib/sendspin
+      - mkdir -p /app/bin
 
       # Copy all application files
       - cp -r sendspin-app/* /app/lib/sendspin/
@@ -93,3 +94,7 @@ modules:
       # AppStream metadata
       - type: file
         path: io.sendspin.client.appdata.xml
+
+      # Application icon
+      - type: file
+        path: sendspin-256.png

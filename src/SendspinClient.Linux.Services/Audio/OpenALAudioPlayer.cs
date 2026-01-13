@@ -28,8 +28,6 @@ public sealed class OpenALAudioPlayer : IAudioPlayer, IAudioDeviceEnumerator
 
     private AudioFormat? _format;
     private IAudioSampleSource? _sampleSource;
-    private ITimedAudioBuffer? _timedBuffer; // For sync correction
-    private IDynamicResampler? _resampler;
     private Thread? _playbackThread;
     private CancellationTokenSource? _playCts;
 
@@ -122,26 +120,6 @@ public sealed class OpenALAudioPlayer : IAudioPlayer, IAudioDeviceEnumerator
         lock (_lock)
         {
             _sampleSource = source;
-
-            // If the source is backed by a timed buffer, create resampler for sync correction
-            if (_format != null && _resampler == null)
-            {
-                _resampler = DynamicResamplerFactory.Create(_format.SampleRate, _format.Channels);
-                _logger?.LogInformation("Resampler ready for sync correction (backend: {Type})",
-                    _resampler.GetType().Name);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Sets the timed buffer for sync correction. The SDK's audio pipeline will call this.
-    /// </summary>
-    public void SetTimedBuffer(ITimedAudioBuffer timedBuffer)
-    {
-        lock (_lock)
-        {
-            _timedBuffer = timedBuffer;
-            _timedBuffer.OutputLatencyMicroseconds = OutputLatencyMs * 1000;
         }
     }
 
@@ -267,15 +245,12 @@ public sealed class OpenALAudioPlayer : IAudioPlayer, IAudioDeviceEnumerator
         _floatBuffer = new float[samplesPerBuffer];
         _byteBuffer = new byte[bytesPerBuffer];
 
-        // Allocate resampling buffers if needed
-        float[] resampledBuffer = new float[(int)(samplesPerBuffer * 1.1)];
-
         try
         {
             foreach (var buf in _buffers)
             {
                 if (ct.IsCancellationRequested) return;
-                FillAndQueueBuffer(buf, _floatBuffer, _byteBuffer, resampledBuffer);
+                FillAndQueueBuffer(buf, _floatBuffer, _byteBuffer);
             }
 
             _al.SourcePlay(_source);
@@ -288,7 +263,7 @@ public sealed class OpenALAudioPlayer : IAudioPlayer, IAudioDeviceEnumerator
                 while (processed-- > 0 && !ct.IsCancellationRequested)
                 {
                     _al.SourceUnqueueBuffers(_source, unqueueBuf);
-                    FillAndQueueBuffer(unqueueBuf[0], _floatBuffer, _byteBuffer, resampledBuffer);
+                    FillAndQueueBuffer(unqueueBuf[0], _floatBuffer, _byteBuffer);
                 }
 
                 _al.GetSourceProperty(_source, GetSourceInteger.SourceState, out int state);
@@ -308,21 +283,17 @@ public sealed class OpenALAudioPlayer : IAudioPlayer, IAudioDeviceEnumerator
         }
     }
 
-    private void FillAndQueueBuffer(uint buffer, float[] floatData, byte[] byteData, float[] resampledData)
+    private void FillAndQueueBuffer(uint buffer, float[] floatData, byte[] byteData)
     {
         if (_al == null || _format == null) return;
 
         IAudioSampleSource? source;
-        ITimedAudioBuffer? timedBuffer;
-        IDynamicResampler? resampler;
         lock (_lock)
         {
             source = _sampleSource;
-            timedBuffer = _timedBuffer;
-            resampler = _resampler;
         }
 
-        // Read float samples from SDK source
+        // Read float samples from SDK source (sync correction already applied by SyncCorrectedSampleSource)
         int samplesRead = source?.Read(floatData, 0, floatData.Length) ?? 0;
         if (samplesRead == 0)
         {
@@ -330,25 +301,8 @@ public sealed class OpenALAudioPlayer : IAudioPlayer, IAudioDeviceEnumerator
         }
         else
         {
-            // Apply sync correction via resampling if needed
-            float[] outputSamples = floatData;
-            int outputCount = samplesRead;
-
-            if (timedBuffer != null && resampler != null)
-            {
-                double targetRate = timedBuffer.TargetPlaybackRate;
-                if (Math.Abs(targetRate - 1.0) > 0.0001)
-                {
-                    resampler.Ratio = targetRate;
-                    outputCount = resampler.Process(
-                        floatData.AsSpan(0, samplesRead),
-                        resampledData.AsSpan());
-                    outputSamples = resampledData;
-                }
-            }
-
             // Convert float32 to int16
-            ConvertFloatToInt16(outputSamples, byteData, Math.Min(outputCount, byteData.Length / 2));
+            ConvertFloatToInt16(floatData, byteData, Math.Min(samplesRead, byteData.Length / 2));
         }
 
         var alFormat = _format.Channels == 2 ? BufferFormat.Stereo16 : BufferFormat.Mono16;
@@ -389,11 +343,6 @@ public sealed class OpenALAudioPlayer : IAudioPlayer, IAudioDeviceEnumerator
 
     private unsafe void CleanupOpenAL()
     {
-        // Dispose resampling resources
-        _resampler?.Dispose();
-        _resampler = null;
-        _timedBuffer = null;
-
         if (_al != null)
         {
             foreach (var buf in _buffers) try { _al.DeleteBuffer(buf); } catch { }

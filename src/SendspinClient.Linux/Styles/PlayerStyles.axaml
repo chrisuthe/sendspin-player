@@ -1,0 +1,234 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         SENDSPIN PLAYER STYLES
+         Custom control styles for the music player interface
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         TRANSPORT BUTTON - Play/Pause circular button
+         ───────────────────────────────────────────────────────────────────────── -->
+    <Style Selector="Button.transport">
+        <Setter Property="Width" Value="64" />
+        <Setter Property="Height" Value="64" />
+        <Setter Property="CornerRadius" Value="32" />
+        <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource BackgroundDeepBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button.transport:pointerover">
+        <Setter Property="Background" Value="{DynamicResource AccentSecondaryBrush}" />
+        <Setter Property="RenderTransform" Value="scale(1.05)" />
+    </Style>
+
+    <Style Selector="Button.transport:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.95)" />
+    </Style>
+
+    <Style Selector="Button.transport:disabled">
+        <Setter Property="Background" Value="{DynamicResource BackgroundSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextDisabledBrush}" />
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         GHOST BUTTON - Subtle, borderless buttons
+         ───────────────────────────────────────────────────────────────────────── -->
+    <Style Selector="Button.ghost">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMedium}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button.ghost:pointerover">
+        <Setter Property="Background" Value="{DynamicResource BackgroundHoverBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <Style Selector="Button.ghost:pressed">
+        <Setter Property="Background" Value="{DynamicResource BackgroundSurfaceBrush}" />
+    </Style>
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         PILL BUTTON - Small rounded action buttons
+         ───────────────────────────────────────────────────────────────────────── -->
+    <Style Selector="Button.pill">
+        <Setter Property="Background" Value="{DynamicResource BackgroundSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusRound}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button.pill:pointerover">
+        <Setter Property="Background" Value="{DynamicResource BackgroundHoverBrush}" />
+    </Style>
+
+    <Style Selector="Button.pill:pressed">
+        <Setter Property="Background" Value="{DynamicResource BackgroundElevatedBrush}" />
+    </Style>
+
+    <Style Selector="Button.pill.accent">
+        <Setter Property="Background" Value="{DynamicResource AccentMutedBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentSecondaryBrush}" />
+    </Style>
+
+    <Style Selector="Button.pill.accent:pointerover">
+        <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource BackgroundDeepBrush}" />
+    </Style>
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         ICON BUTTON - Small circular icon buttons
+         ───────────────────────────────────────────────────────────────────────── -->
+    <Style Selector="Button.icon">
+        <Setter Property="Width" Value="36" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button.icon:pointerover">
+        <Setter Property="Background" Value="{DynamicResource BackgroundHoverBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         VOLUME SLIDER - Custom styled slider
+         ───────────────────────────────────────────────────────────────────────── -->
+    <Style Selector="Slider.volume">
+        <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundSurfaceBrush}" />
+    </Style>
+
+    <Style Selector="Slider.volume /template/ Thumb">
+        <Setter Property="Width" Value="14" />
+        <Setter Property="Height" Value="14" />
+    </Style>
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         COMBOBOX - Custom styled dropdown
+         ───────────────────────────────────────────────────────────────────────── -->
+    <Style Selector="ComboBox.server-select">
+        <Setter Property="Background" Value="{DynamicResource BackgroundSurfaceBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMedium}" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="MinHeight" Value="36" />
+    </Style>
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         STATUS DOT - Connection indicator
+         ───────────────────────────────────────────────────────────────────────── -->
+    <Style Selector="Ellipse.status-dot">
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Height" Value="8" />
+    </Style>
+
+    <Style Selector="Ellipse.status-dot.connected">
+        <Setter Property="Fill" Value="{DynamicResource StatusConnectedBrush}" />
+    </Style>
+
+    <Style Selector="Ellipse.status-dot.disconnected">
+        <Setter Property="Fill" Value="{DynamicResource StatusDisconnectedBrush}" />
+    </Style>
+
+    <Style Selector="Ellipse.status-dot.connecting">
+        <Setter Property="Fill" Value="{DynamicResource StatusConnectingBrush}" />
+    </Style>
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         TEXT STYLES
+         ───────────────────────────────────────────────────────────────────────── -->
+    <Style Selector="TextBlock.track-title">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeXl}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <Style Selector="TextBlock.track-artist">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeMd}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <Style Selector="TextBlock.track-album">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <Style Selector="TextBlock.label">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeXs}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.status">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+    </Style>
+
+    <!-- ─────────────────────────────────────────────────────────────────────────
+         CARD PANEL - Elevated surface containers
+         ───────────────────────────────────────────────────────────────────────── -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource BackgroundElevatedBrush}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusLarge}" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style Selector="Border.card-surface">
+        <Setter Property="Background" Value="{DynamicResource BackgroundSurfaceBrush}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMedium}" />
+        <Setter Property="Padding" Value="12" />
+    </Style>
+
+</Styles>

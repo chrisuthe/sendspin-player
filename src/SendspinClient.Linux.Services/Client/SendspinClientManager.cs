@@ -47,6 +47,11 @@ public sealed class SendspinClientManager : IAsyncDisposable
     public event EventHandler<TrackMetadataEventArgs>? TrackChanged;
 
     /// <summary>
+    /// Fired when album artwork is received or cleared.
+    /// </summary>
+    public event EventHandler<ArtworkEventArgs>? ArtworkChanged;
+
+    /// <summary>
     /// Gets whether the client is currently connected to a server.
     /// </summary>
     public bool IsConnected => _connection?.State == ConnectionState.Connected;
@@ -136,13 +141,15 @@ public sealed class SendspinClientManager : IAsyncDisposable
             // Create connection
             _connection = new SendspinConnection(_loggerFactory.CreateLogger<SendspinConnection>());
 
-            // Create client capabilities
+            // Create client capabilities with artwork support
             var capabilities = new ClientCapabilities
             {
                 ClientName = "Sendspin Linux",
                 ProductName = "Sendspin Linux Client",
                 Manufacturer = "Sendspin Contributors",
-                SoftwareVersion = "1.0.0"
+                SoftwareVersion = "1.0.0",
+                ArtworkFormats = ["jpeg", "png"],
+                ArtworkMaxSize = 320
             };
 
             // Create client service with audio pipeline
@@ -156,6 +163,7 @@ public sealed class SendspinClientManager : IAsyncDisposable
             // Subscribe to events
             _client.ConnectionStateChanged += OnConnectionStateChanged;
             _client.GroupStateChanged += OnGroupStateChanged;
+            _client.ArtworkReceived += OnArtworkReceived;
 
             // Build WebSocket URI and connect
             // Prefer IP address over hostname since mDNS hostnames may not be resolvable
@@ -216,7 +224,20 @@ public sealed class SendspinClientManager : IAsyncDisposable
                 return buffer;
             },
             playerFactory: _playerFactory,
-            sourceFactory: (buffer, timeFunc) => new BufferedAudioSampleSource(buffer, timeFunc),
+            sourceFactory: (buffer, timeFunc) =>
+            {
+                // Create sync correction calculator for SDK 5.x external correction
+                var correctionCalculator = new SyncCorrectionCalculator(
+                    SyncCorrectionOptions.CliDefaults,
+                    buffer.Format.SampleRate,
+                    buffer.Format.Channels);
+
+                return new SyncCorrectedSampleSource(
+                    buffer,
+                    correctionCalculator,
+                    timeFunc,
+                    _loggerFactory.CreateLogger<SyncCorrectedSampleSource>());
+            },
             precisionTimer: null,
             waitForConvergence: true,
             convergenceTimeoutMs: 5000);
@@ -235,6 +256,7 @@ public sealed class SendspinClientManager : IAsyncDisposable
             {
                 _client.ConnectionStateChanged -= OnConnectionStateChanged;
                 _client.GroupStateChanged -= OnGroupStateChanged;
+                _client.ArtworkReceived -= OnArtworkReceived;
                 await _client.DisconnectAsync();
                 await _client.DisposeAsync();
                 _client = null;
@@ -328,6 +350,12 @@ public sealed class SendspinClientManager : IAsyncDisposable
         }
     }
 
+    private void OnArtworkReceived(object? sender, byte[] imageData)
+    {
+        _logger.LogDebug("Artwork received: size={Size} bytes", imageData?.Length ?? 0);
+        ArtworkChanged?.Invoke(this, new ArtworkEventArgs(0, imageData));
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed) return;
@@ -373,5 +401,27 @@ public sealed class TrackMetadataEventArgs : EventArgs
         Title = title;
         Artist = artist;
         Album = album;
+    }
+}
+
+/// <summary>
+/// Event args for artwork changes.
+/// </summary>
+public sealed class ArtworkEventArgs : EventArgs
+{
+    /// <summary>
+    /// Gets the artwork channel (0-3).
+    /// </summary>
+    public int Channel { get; }
+
+    /// <summary>
+    /// Gets the image data, or null if artwork was cleared.
+    /// </summary>
+    public byte[]? ImageData { get; }
+
+    public ArtworkEventArgs(int channel, byte[]? imageData)
+    {
+        Channel = channel;
+        ImageData = imageData;
     }
 }

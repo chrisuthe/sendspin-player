@@ -1,6 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -43,6 +45,18 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
     /// </summary>
     [ObservableProperty]
     private string _artist = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the album of the currently playing track.
+    /// </summary>
+    [ObservableProperty]
+    private string _album = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the album artwork image.
+    /// </summary>
+    [ObservableProperty]
+    private Bitmap? _albumArtwork;
 
     /// <summary>
     /// Gets or sets the current volume level (0-100).
@@ -158,6 +172,7 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
         _clientManager.ServerLost += OnServerLost;
         _clientManager.ConnectionStateChanged += OnConnectionStateChanged;
         _clientManager.TrackChanged += OnTrackChanged;
+        _clientManager.ArtworkChanged += OnArtworkChanged;
 
         _logger.LogDebug("MainViewModel initialized with platform services");
 
@@ -335,7 +350,10 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
             {
                 TrackTitle = "No Track Playing";
                 Artist = string.Empty;
+                Album = string.Empty;
                 IsPaused = false;
+                AlbumArtwork?.Dispose();
+                AlbumArtwork = null;
             }
         });
 
@@ -355,6 +373,7 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
         {
             TrackTitle = string.IsNullOrWhiteSpace(e.Title) ? "No Track Playing" : e.Title;
             Artist = e.Artist ?? string.Empty;
+            Album = e.Album ?? string.Empty;
         });
 
         _logger?.LogDebug("Track info updated: {Title} - {Artist}", e.Title, e.Artist);
@@ -364,6 +383,35 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
 
         // Update Discord Rich Presence
         _discordService?.UpdatePresence(e.Title, e.Artist, ServerName, !IsPaused);
+    }
+
+    private void OnArtworkChanged(object? sender, ArtworkEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            // Dispose old bitmap to free resources
+            AlbumArtwork?.Dispose();
+
+            if (e.ImageData == null || e.ImageData.Length == 0)
+            {
+                AlbumArtwork = null;
+                _logger?.LogDebug("Artwork cleared");
+                return;
+            }
+
+            try
+            {
+                using var stream = new MemoryStream(e.ImageData);
+                AlbumArtwork = new Bitmap(stream);
+                _logger?.LogDebug("Artwork loaded: {Width}x{Height}",
+                    AlbumArtwork.PixelSize.Width, AlbumArtwork.PixelSize.Height);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to load artwork");
+                AlbumArtwork = null;
+            }
+        });
     }
 
     #endregion
@@ -405,9 +453,12 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
             _clientManager.ServerLost -= OnServerLost;
             _clientManager.ConnectionStateChanged -= OnConnectionStateChanged;
             _clientManager.TrackChanged -= OnTrackChanged;
+            _clientManager.ArtworkChanged -= OnArtworkChanged;
 
             await _clientManager.DisposeAsync();
         }
+
+        AlbumArtwork?.Dispose();
     }
 
     #endregion
