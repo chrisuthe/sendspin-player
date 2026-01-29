@@ -320,8 +320,10 @@ public sealed class SendspinClientManager : IAsyncDisposable
             _logger.LogDebug("Connecting to URI: {Uri}", uri);
             await _client.ConnectAsync(uri, ct);
 
-            _logger.LogInformation("Connected to {ServerName}", server.Name);
-            ConnectionStateChanged?.Invoke(this, new ConnectionStateEventArgs(true, server.Name));
+            // Use the authoritative server name from the handshake, falling back to mDNS name
+            var serverName = _client.ServerName ?? server.Name;
+            _logger.LogInformation("Connected to {ServerName}", serverName);
+            ConnectionStateChanged?.Invoke(this, new ConnectionStateEventArgs(true, serverName));
         }
         catch (Exception ex)
         {
