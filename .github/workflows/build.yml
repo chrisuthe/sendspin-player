@@ -213,20 +213,38 @@ jobs:
         run: dotnet test --configuration Release --no-build --verbosity normal
         continue-on-error: true
 
-      - name: Publish
+      - name: Publish (self-contained)
         run: |
           dotnet publish src/Sendspin.Player/Sendspin.Player.csproj `
             --configuration Release `
             --framework net8.0-windows10.0.19041.0 `
             --runtime ${{ matrix.rid }} `
             --self-contained `
+            -p:PublishSingleFile=true `
             --output ./publish/${{ matrix.rid }}
 
-      - name: Upload artifacts
+      - name: Publish (framework-dependent)
+        run: |
+          dotnet publish src/Sendspin.Player/Sendspin.Player.csproj `
+            --configuration Release `
+            --framework net8.0-windows10.0.19041.0 `
+            --runtime ${{ matrix.rid }} `
+            --no-self-contained `
+            -p:PublishSingleFile=true `
+            --output ./publish/${{ matrix.rid }}-fdd
+
+      - name: Upload self-contained artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sendspin-player-${{ matrix.rid }}
           path: ./publish/${{ matrix.rid }}
+          retention-days: 14
+
+      - name: Upload framework-dependent artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sendspin-player-${{ matrix.rid }}-fdd
+          path: ./publish/${{ matrix.rid }}-fdd
           retention-days: 14
 
   package-windows:
@@ -236,21 +254,36 @@ jobs:
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
 
     steps:
-      - name: Download build
+      - name: Download self-contained build
         uses: actions/download-artifact@v4
         with:
           name: sendspin-player-win-x64
           path: ./portable
+
+      - name: Download framework-dependent build
+        uses: actions/download-artifact@v4
+        with:
+          name: sendspin-player-win-x64-fdd
+          path: ./portable-fdd
 
       - name: Clean up non-essential files
         run: |
           # Remove debug symbols and XML docs to reduce size
           Remove-Item -Path ./portable/*.pdb -ErrorAction SilentlyContinue
           Remove-Item -Path ./portable/*.xml -ErrorAction SilentlyContinue
+          Remove-Item -Path ./portable-fdd/*.pdb -ErrorAction SilentlyContinue
+          Remove-Item -Path ./portable-fdd/*.xml -ErrorAction SilentlyContinue
 
-      - name: Upload portable package
+      - name: Upload portable package (self-contained)
         uses: actions/upload-artifact@v4
         with:
           name: Sendspin-Player-Windows-Portable
           path: ./portable
+          retention-days: 30
+
+      - name: Upload portable package (framework-dependent)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sendspin-Player-Windows-Portable-NetRequired
+          path: ./portable-fdd
           retention-days: 30
