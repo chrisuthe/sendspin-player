@@ -1,18 +1,18 @@
-# Sendspin Linux Client
+# Sendspin Player
 
-A Linux desktop application for synchronized multi-room audio playback using the Sendspin protocol. Built with Avalonia UI and PipeWire audio.
+A cross-platform desktop application for synchronized multi-room audio playback using the Sendspin protocol. Built with Avalonia UI, supporting Windows and Linux.
 
 ## Features
 
 - **Synchronized multi-room audio**: Play audio in perfect sync with other Sendspin clients
-- **Native Linux experience**: PipeWire audio, D-Bus notifications, XDG directory support
+- **Cross-platform**: Native experience on Windows (WASAPI) and Linux (OpenAL/PipeWire)
 - **Low-latency audio**: Sub-millisecond sync accuracy via Kalman filter clock synchronization
 
 ## Requirements
 
 - .NET 8.0 Runtime (or use self-contained build)
-- PipeWire or PulseAudio audio server
-- Linux x64 or ARM64
+- **Linux**: PipeWire or PulseAudio audio server
+- **Windows**: Windows 10 or later
 
 ## Installation
 
@@ -38,21 +38,22 @@ sendspin
 ```bash
 dotnet restore
 dotnet build
-dotnet run --project src/SendspinClient.Linux
+dotnet run --project src/Sendspin.Player
 ```
 
 ## Architecture
 
-This client uses the [Sendspin.SDK](https://www.nuget.org/packages/Sendspin.SDK) NuGet package for all protocol handling, clock synchronization, and audio pipeline orchestration. The SDK is shared with the Windows client.
+This client uses the [Sendspin.SDK](https://www.nuget.org/packages/Sendspin.SDK) NuGet package for all protocol handling, clock synchronization, and audio pipeline orchestration.
 
 ```
 src/
-├── SendspinClient.Linux/           # Avalonia UI application
-├── SendspinClient.Linux.Services/  # Linux platform services
-│   ├── Audio/                      # PipeWire audio player
-│   ├── Notifications/              # D-Bus notifications
-│   └── Discord/                    # Rich presence integration
-└── SendspinClient.Linux.Tests/     # Unit tests
+├── Sendspin.Player/                # Avalonia UI application
+├── Sendspin.Player.Services/       # Core services (legacy)
+├── Sendspin.Core/                  # Shared interfaces
+├── Sendspin.Platform.Linux/        # Linux: OpenAL audio, D-Bus notifications
+├── Sendspin.Platform.Windows/      # Windows: WASAPI audio, Toast notifications
+├── Sendspin.Platform.Shared/       # Cross-platform implementations
+└── Sendspin.Player.Tests/          # Unit tests
 ```
 
 ---
@@ -111,7 +112,7 @@ For scenarios requiring native Linux compilation:
 ```bash
 # SSH to Fedora and build there
 ssh user@fedora.local
-cd ~/Linuxspin
+cd ~/sendspin-player
 ./scripts/build.sh --release
 ```
 
@@ -209,7 +210,7 @@ curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l ~/.vsdbg
 dotnet test
 
 # Run tests on Linux (via SSH)
-ssh developer@fedora.local 'cd ~/Linuxspin && ./scripts/test.sh'
+ssh developer@fedora.local 'cd ~/sendspin-player && ./scripts/test.sh'
 
 # Run with coverage
 ./scripts/test.sh --coverage

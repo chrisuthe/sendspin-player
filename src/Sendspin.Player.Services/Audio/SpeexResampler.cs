@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace SendspinClient.Linux.Services.Audio;
+namespace Sendspin.Player.Services.Audio;
 
 /// <summary>
 /// Interface for dynamic audio resamplers that support real-time rate adjustment.

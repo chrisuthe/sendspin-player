@@ -56,7 +56,7 @@ echo "Copying application files..."
 cp -r "${PROJECT_ROOT}/publish/linux-x64/"* "${BUILD_DIR}/usr/bin/"
 
 # Make main executable runnable
-chmod +x "${BUILD_DIR}/usr/bin/SendspinClient.Linux"
+chmod +x "${BUILD_DIR}/usr/bin/Sendspin.Player"
 
 # Copy AppRun script
 cp "${PROJECT_ROOT}/packaging/appimage/AppRun" "${BUILD_DIR}/"
@@ -67,7 +67,7 @@ cp "${PROJECT_ROOT}/packaging/appimage/sendspin.desktop" "${BUILD_DIR}/sendspin.
 cp "${PROJECT_ROOT}/packaging/appimage/sendspin.desktop" "${BUILD_DIR}/usr/share/applications/"
 
 # Create a placeholder icon if none exists
-ICON_SRC="${PROJECT_ROOT}/src/SendspinClient.Linux/Assets/sendspin.png"
+ICON_SRC="${PROJECT_ROOT}/src/Sendspin.Player/Assets/sendspin.png"
 if [ -f "${ICON_SRC}" ]; then
     cp "${ICON_SRC}" "${BUILD_DIR}/sendspin.png"
     cp "${ICON_SRC}" "${BUILD_DIR}/usr/share/icons/hicolor/256x256/apps/sendspin.png"

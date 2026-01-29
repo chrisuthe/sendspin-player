@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Sendspin.SDK.Audio;
 using Sendspin.SDK.Models;
-using SendspinClient.Linux.Services.Audio.Interfaces;
+using Sendspin.Player.Services.Audio.Interfaces;
 using Silk.NET.OpenAL;
 
-namespace SendspinClient.Linux.Services.Audio;
+namespace Sendspin.Player.Services.Audio;
 
 /// <summary>
 /// OpenAL-based audio player for Linux using Silk.NET.

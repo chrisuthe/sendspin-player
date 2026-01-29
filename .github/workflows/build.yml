@@ -1,4 +1,4 @@
-# Linuxspin CI/CD Pipeline
+# Sendspin-Player CI/CD Pipeline
 name: Build
 
 on:
@@ -42,7 +42,7 @@ jobs:
 
       - name: Publish
         run: |
-          dotnet publish src/SendspinClient.Linux/SendspinClient.Linux.csproj \
+          dotnet publish src/Sendspin.Player/Sendspin.Player.csproj \
             --configuration Release \
             --runtime ${{ matrix.rid }} \
             --self-contained \
@@ -51,7 +51,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: linuxspin-${{ matrix.rid }}
+          name: sendspin-player-${{ matrix.rid }}
           path: ./publish/${{ matrix.rid }}
           retention-days: 14
 
@@ -68,7 +68,7 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: linuxspin-linux-x64
+          name: sendspin-player-linux-x64
           path: ./publish/linux-x64
 
       - name: Install tools
@@ -82,13 +82,13 @@ jobs:
         run: |
           mkdir -p AppDir/usr/bin
           cp -r ./publish/linux-x64/* AppDir/usr/bin/
-          chmod +x AppDir/usr/bin/SendspinClient.Linux
+          chmod +x AppDir/usr/bin/Sendspin.Player
 
           # AppRun script
           cat > AppDir/AppRun << 'EOF'
           #!/bin/bash
           HERE=$(dirname "$(readlink -f "$0")")
-          exec "$HERE/usr/bin/SendspinClient.Linux" "$@"
+          exec "$HERE/usr/bin/Sendspin.Player" "$@"
           EOF
           chmod +x AppDir/AppRun
 
@@ -96,7 +96,7 @@ jobs:
           cat > AppDir/sendspin.desktop << 'EOF'
           [Desktop Entry]
           Name=Sendspin
-          Exec=SendspinClient.Linux
+          Exec=Sendspin.Player
           Icon=sendspin
           Type=Application
           Categories=Audio;
@@ -105,13 +105,13 @@ jobs:
           # Placeholder icon (1x1 transparent PNG)
           echo -n 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > AppDir/sendspin.png
 
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir Linuxspin-x86_64.AppImage
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir Sendspin-Player-x86_64.AppImage
 
       - name: Upload AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: linuxspin-appimage
-          path: Linuxspin-x86_64.AppImage
+          name: sendspin-player-appimage
+          path: Sendspin-Player-x86_64.AppImage
           retention-days: 30
 
   # Build Flatpak package
@@ -127,7 +127,7 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: linuxspin-linux-x64
+          name: sendspin-player-linux-x64
           path: ./publish/linux-x64
 
       - name: Install Flatpak tools
@@ -145,7 +145,7 @@ jobs:
           runtime: org.freedesktop.Platform
           runtime-version: '23.08'
           sdk: org.freedesktop.Sdk
-          command: SendspinClient.Linux
+          command: Sendspin.Player
           finish-args:
             - --share=ipc
             - --socket=x11
@@ -161,13 +161,13 @@ jobs:
               build-commands:
                 - mkdir -p /app/bin
                 - cp -r app-files/* /app/bin/
-                - chmod +x /app/bin/SendspinClient.Linux
+                - chmod +x /app/bin/Sendspin.Player
                 - mkdir -p /app/share/applications
                 - |
                   cat > /app/share/applications/io.sendspin.client.desktop << 'DESKTOP'
                   [Desktop Entry]
                   Name=Sendspin
-                  Exec=SendspinClient.Linux
+                  Exec=Sendspin.Player
                   Icon=io.sendspin.client
                   Type=Application
                   Categories=Audio;
@@ -182,11 +182,11 @@ jobs:
           flatpak-builder --user --force-clean --repo=repo build-dir io.sendspin.client.yml
 
           # Create bundle
-          flatpak build-bundle repo Linuxspin.flatpak io.sendspin.client
+          flatpak build-bundle repo Sendspin-Player.flatpak io.sendspin.client
 
       - name: Upload Flatpak
         uses: actions/upload-artifact@v4
         with:
-          name: linuxspin-flatpak
-          path: Linuxspin.flatpak
+          name: sendspin-player-flatpak
+          path: Sendspin-Player.flatpak
           retention-days: 30

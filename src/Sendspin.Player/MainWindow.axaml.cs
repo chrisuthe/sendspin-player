@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Controls;
 
-namespace SendspinClient.Linux;
+namespace Sendspin.Player;
 
 /// <summary>
 /// Main application window for the Sendspin Linux client.

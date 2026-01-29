@@ -9,11 +9,11 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using SendspinClient.Linux.Services.Client;
-using SendspinClient.Linux.Services.Discord;
-using SendspinClient.Linux.Services.Notifications;
+using Sendspin.Player.Services.Client;
+using Sendspin.Player.Services.Discord;
+using Sendspin.Player.Services.Notifications;
 
-namespace SendspinClient.Linux.ViewModels;
+namespace Sendspin.Player.ViewModels;
 
 /// <summary>
 /// Main view model for the Sendspin Linux client.

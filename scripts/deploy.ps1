@@ -151,7 +151,7 @@ if (-not $SourcePath) {
 
     # Fall back to debug build if release doesn't exist
     if (-not (Test-Path $SourcePath)) {
-        $debugPath = Join-Path $RepoRoot 'src\SendspinClient.Linux\bin\Debug\net8.0\linux-x64'
+        $debugPath = Join-Path $RepoRoot 'src\Sendspin.Player\bin\Debug\net8.0\linux-x64'
         if (Test-Path $debugPath) {
             $SourcePath = $debugPath
             Write-Warn "Using debug build from: $SourcePath"
@@ -342,7 +342,7 @@ Write-Success "Files deployed successfully"
 
 # Set executable permissions
 Write-Info "Setting executable permissions..."
-Invoke-SshCommand -Command "chmod +x $TargetPath/sendspin 2>/dev/null || chmod +x $TargetPath/SendspinClient.Linux 2>/dev/null || true"
+Invoke-SshCommand -Command "chmod +x $TargetPath/sendspin 2>/dev/null || chmod +x $TargetPath/Sendspin.Player 2>/dev/null || true"
 
 # ==============================================================================
 # Run Application (if requested)
@@ -357,7 +357,7 @@ if ($Run -or $Attach -or $Debug) {
     $runCommand += "export DISPLAY=:0 && "
 
     # Use the correct binary name
-    $runCommand += "if [ -f ./sendspin ]; then ./sendspin; else ./SendspinClient.Linux; fi"
+    $runCommand += "if [ -f ./sendspin ]; then ./sendspin; else ./Sendspin.Player; fi"
 
     if ($Debug) {
         # Remote debugging setup
@@ -374,7 +374,7 @@ if ($Run -or $Attach -or $Debug) {
         Write-Host "To attach debugger in VS Code:" -ForegroundColor Yellow
         Write-Host "  1. Open launch.json and add a 'coreclr' attach configuration" -ForegroundColor White
         Write-Host "  2. Set 'pipeTransport' with ssh connection to $TargetHost" -ForegroundColor White
-        Write-Host "  3. Set 'processName' to 'sendspin' or 'SendspinClient.Linux'" -ForegroundColor White
+        Write-Host "  3. Set 'processName' to 'sendspin' or 'Sendspin.Player'" -ForegroundColor White
         Write-Host ""
     }
 

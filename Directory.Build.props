@@ -7,9 +7,9 @@
     <Version>1.0.0</Version>
     <Authors>Sendspin Team</Authors>
     <Company>Sendspin</Company>
-    <Product>Sendspin Linux Client</Product>
+    <Product>Sendspin Player</Product>
     <Copyright>Copyright (c) 2024-2025 Sendspin</Copyright>
-    <RepositoryUrl>https://github.com/chrisuthe/Linuxspin</RepositoryUrl>
+    <RepositoryUrl>https://github.com/chrisuthe/sendspin-player</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 

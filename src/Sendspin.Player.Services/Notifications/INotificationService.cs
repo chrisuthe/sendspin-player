@@ -1,4 +1,4 @@
-namespace SendspinClient.Linux.Services.Notifications;
+namespace Sendspin.Player.Services.Notifications;
 
 /// <summary>
 /// Provides desktop notification capabilities for the Sendspin client.

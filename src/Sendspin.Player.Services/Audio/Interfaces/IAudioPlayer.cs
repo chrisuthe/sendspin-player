@@ -1,6 +1,6 @@
 // Local audio interfaces for features not provided by Sendspin.SDK
 
-namespace SendspinClient.Linux.Services.Audio.Interfaces;
+namespace Sendspin.Player.Services.Audio.Interfaces;
 
 /// <summary>
 /// Error codes for audio player errors.

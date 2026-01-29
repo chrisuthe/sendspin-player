@@ -6,9 +6,9 @@ using Sendspin.SDK.Connection;
 using Sendspin.SDK.Discovery;
 using Sendspin.SDK.Models;
 using Sendspin.SDK.Synchronization;
-using SendspinClient.Linux.Services.Audio;
+using Sendspin.Player.Services.Audio;
 
-namespace SendspinClient.Linux.Services.Client;
+namespace Sendspin.Player.Services.Client;
 
 /// <summary>
 /// Manages Sendspin server discovery, connection, and audio playback.

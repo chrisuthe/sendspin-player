@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace SendspinClient.Linux.Services.Notifications;
+namespace Sendspin.Player.Services.Notifications;
 
 /// <summary>
 /// Notification service using notify-send command as a reliable fallback.

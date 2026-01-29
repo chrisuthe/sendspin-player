@@ -2,7 +2,7 @@ using DiscordRPC;
 using DiscordRPC.Logging;
 using Microsoft.Extensions.Logging;
 
-namespace SendspinClient.Linux.Services.Discord;
+namespace Sendspin.Player.Services.Discord;
 
 /// <summary>
 /// Service for integrating Discord Rich Presence to show current playback status.

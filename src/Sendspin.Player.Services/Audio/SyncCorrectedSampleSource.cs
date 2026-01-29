@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Sendspin.SDK.Audio;
 using Sendspin.SDK.Models;
 
-namespace SendspinClient.Linux.Services.Audio;
+namespace Sendspin.Player.Services.Audio;
 
 /// <summary>
 /// Bridges <see cref="ITimedAudioBuffer"/> to <see cref="IAudioSampleSource"/> with external sync correction.

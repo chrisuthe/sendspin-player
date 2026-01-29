@@ -1,6 +1,6 @@
 using Sendspin.SDK.Discovery;
 
-namespace SendspinClient.Linux.Services.Client;
+namespace Sendspin.Player.Services.Client;
 
 /// <summary>
 /// Server information obtained from discovery handshake.

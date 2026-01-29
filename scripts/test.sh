@@ -22,8 +22,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-SOLUTION_FILE="$REPO_ROOT/SendspinClient.Linux.sln"
-TEST_PROJECT="$REPO_ROOT/src/SendspinClient.Linux.Tests/SendspinClient.Linux.Tests.csproj"
+SOLUTION_FILE="$REPO_ROOT/Sendspin.Player.sln"
+TEST_PROJECT="$REPO_ROOT/src/Sendspin.Player.Tests/Sendspin.Player.Tests.csproj"
 RESULTS_DIR="$REPO_ROOT/artifacts/test-results"
 
 # Default options

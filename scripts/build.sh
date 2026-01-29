@@ -24,8 +24,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-SOLUTION_FILE="$REPO_ROOT/SendspinClient.Linux.sln"
-MAIN_PROJECT="$REPO_ROOT/src/SendspinClient.Linux/SendspinClient.Linux.csproj"
+SOLUTION_FILE="$REPO_ROOT/Sendspin.Player.sln"
+MAIN_PROJECT="$REPO_ROOT/src/Sendspin.Player/Sendspin.Player.csproj"
 ARTIFACTS_DIR="$REPO_ROOT/artifacts"
 
 # Default options

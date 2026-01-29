@@ -6,9 +6,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/SendspinClient.Linux/bin/Debug/net8.0/SendspinClient.Linux.dll",
+            "program": "${workspaceFolder}/src/Sendspin.Player/bin/Debug/net8.0/Sendspin.Player.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/src/SendspinClient.Linux",
+            "cwd": "${workspaceFolder}/src/Sendspin.Player",
             "console": "internalConsole",
             "stopAtEntry": false,
             "env": {

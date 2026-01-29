@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace SendspinClient.Linux.Configuration;
+namespace Sendspin.Player.Configuration;
 
 /// <summary>
 /// Manages XDG Base Directory specification paths for the Sendspin Linux client.

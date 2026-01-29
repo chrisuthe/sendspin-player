@@ -21,10 +21,10 @@
 # =============================================================================
 
 # Project settings
-PROJECT_NAME := SendspinClient.Linux
-SOLUTION := SendspinClient.Linux.sln
-MAIN_PROJECT := src/SendspinClient.Linux/SendspinClient.Linux.csproj
-TEST_PROJECT := src/SendspinClient.Linux.Tests/SendspinClient.Linux.Tests.csproj
+PROJECT_NAME := Sendspin.Player
+SOLUTION := Sendspin.Player.sln
+MAIN_PROJECT := src/Sendspin.Player/Sendspin.Player.csproj
+TEST_PROJECT := src/Sendspin.Player.Tests/Sendspin.Player.Tests.csproj
 
 # Build settings
 CONFIGURATION ?= Debug

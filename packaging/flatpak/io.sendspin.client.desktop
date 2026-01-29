@@ -2,7 +2,7 @@
 Name=Sendspin
 Comment=Synchronized multi-room audio playback
 GenericName=Audio Player
-Exec=SendspinClient.Linux %U
+Exec=Sendspin.Player %U
 Icon=io.sendspin.client
 Type=Application
 Categories=Audio;AudioVideo;Player;

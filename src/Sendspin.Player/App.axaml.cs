@@ -6,8 +6,8 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sendspin.Core.Platform;
-using SendspinClient.Linux.ViewModels;
-using SendspinClient.Linux.Services.Client;
+using Sendspin.Player.ViewModels;
+using Sendspin.Player.Services.Client;
 
 #if WINDOWS
 using Sendspin.Platform.Windows.Platform;
@@ -15,7 +15,7 @@ using Sendspin.Platform.Windows.Platform;
 using Sendspin.Platform.Linux.Platform;
 #endif
 
-namespace SendspinClient.Linux;
+namespace Sendspin.Player;
 
 /// <summary>
 /// The main Avalonia application class for the Sendspin Linux client.

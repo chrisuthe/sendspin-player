@@ -9,13 +9,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <RootNamespace>SendspinClient.Linux</RootNamespace>
-    <AssemblyName>SendspinClient.Linux</AssemblyName>
+    <RootNamespace>Sendspin.Player</RootNamespace>
+    <AssemblyName>Sendspin.Player</AssemblyName>
     <!-- ApplicationIcon can be set when an icon is available -->
     <!-- <ApplicationIcon>Assets/sendspin.ico</ApplicationIcon> -->
     <Version>1.0.0</Version>
     <Authors>Sendspin Team</Authors>
-    <Description>Sendspin Cross-Platform Client - Synchronized multi-room audio playback</Description>
+    <Description>Sendspin Cross-Platform Audio Player - Synchronized multi-room audio playback</Description>
     <!-- Enable building Windows platform project from Linux -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
@@ -59,7 +59,7 @@
 
   <ItemGroup>
     <!-- Legacy services (will be migrated to new platform projects) -->
-    <ProjectReference Include="..\SendspinClient.Linux.Services\SendspinClient.Linux.Services.csproj" />
+    <ProjectReference Include="..\Sendspin.Player.Services\Sendspin.Player.Services.csproj" />
 
     <!-- New cross-platform architecture -->
     <ProjectReference Include="..\Sendspin.Core\Sendspin.Core.csproj" />

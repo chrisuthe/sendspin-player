@@ -18,7 +18,7 @@ runtime: org.freedesktop.Platform
 runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
 
-command: SendspinClient.Linux
+command: Sendspin.Player
 
 # Sandbox permissions
 finish-args:
@@ -56,15 +56,15 @@ modules:
       - cp -r sendspin-app/* /app/lib/sendspin/
 
       # Make main executable runnable
-      - chmod +x /app/lib/sendspin/SendspinClient.Linux
+      - chmod +x /app/lib/sendspin/Sendspin.Player
 
       # Create wrapper script in bin
       - |
-        cat > /app/bin/SendspinClient.Linux << 'EOF'
+        cat > /app/bin/Sendspin.Player << 'EOF'
         #!/bin/sh
-        exec /app/lib/sendspin/SendspinClient.Linux "$@"
+        exec /app/lib/sendspin/Sendspin.Player "$@"
         EOF
-      - chmod +x /app/bin/SendspinClient.Linux
+      - chmod +x /app/bin/Sendspin.Player
 
       # Install desktop file
       - install -Dm644 io.sendspin.client.desktop /app/share/applications/io.sendspin.client.desktop

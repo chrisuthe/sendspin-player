@@ -212,7 +212,7 @@ fi
 # Find source directory
 if [[ ! -d "$ARTIFACTS_DIR" ]]; then
     # Try debug build
-    DEBUG_DIR="$REPO_ROOT/src/SendspinClient.Linux/bin/Debug/net8.0/linux-x64"
+    DEBUG_DIR="$REPO_ROOT/src/Sendspin.Player/bin/Debug/net8.0/linux-x64"
     if [[ -d "$DEBUG_DIR" ]]; then
         ARTIFACTS_DIR="$DEBUG_DIR"
         warn "Using debug build from: $ARTIFACTS_DIR"
@@ -306,7 +306,7 @@ deploy() {
 
     # Set executable permissions
     info "Setting executable permissions..."
-    run_ssh "chmod +x $TARGET_PATH/sendspin 2>/dev/null || chmod +x $TARGET_PATH/SendspinClient.Linux 2>/dev/null || true"
+    run_ssh "chmod +x $TARGET_PATH/sendspin 2>/dev/null || chmod +x $TARGET_PATH/Sendspin.Player 2>/dev/null || true"
 
     success "Files deployed successfully"
 }
@@ -359,7 +359,7 @@ if $RUN_AFTER; then
     info "Starting application..."
 
     RUN_CMD="cd $TARGET_PATH && export DISPLAY=:0 && "
-    RUN_CMD+="if [ -f ./sendspin ]; then ./sendspin; else ./SendspinClient.Linux; fi"
+    RUN_CMD+="if [ -f ./sendspin ]; then ./sendspin; else ./Sendspin.Player; fi"
 
     if $ATTACH; then
         echo ""

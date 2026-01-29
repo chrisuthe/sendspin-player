@@ -5,11 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <RootNamespace>SendspinClient.Linux.Services</RootNamespace>
-    <AssemblyName>SendspinClient.Linux.Services</AssemblyName>
+    <RootNamespace>Sendspin.Player.Services</RootNamespace>
+    <AssemblyName>Sendspin.Player.Services</AssemblyName>
     <Version>1.0.0</Version>
     <Authors>Sendspin Team</Authors>
-    <Description>Linux platform services for Sendspin Client</Description>
+    <Description>Core services for Sendspin Player</Description>
   </PropertyGroup>
 
   <ItemGroup>

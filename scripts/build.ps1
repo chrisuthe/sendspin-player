@@ -71,8 +71,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptRoot
-$SolutionFile = Join-Path $RepoRoot 'SendspinClient.Linux.sln'
-$MainProject = Join-Path $RepoRoot 'src\SendspinClient.Linux\SendspinClient.Linux.csproj'
+$SolutionFile = Join-Path $RepoRoot 'Sendspin.Player.sln'
+$MainProject = Join-Path $RepoRoot 'src\Sendspin.Player\Sendspin.Player.csproj'
 
 # Color output helpers
 function Write-Info { param($Message) Write-Host "[INFO] $Message" -ForegroundColor Cyan }
@@ -145,12 +145,12 @@ if ($Clean) {
 
     $cleanPaths = @(
         (Join-Path $RepoRoot 'artifacts'),
-        (Join-Path $RepoRoot 'src\SendspinClient.Linux\bin'),
-        (Join-Path $RepoRoot 'src\SendspinClient.Linux\obj'),
-        (Join-Path $RepoRoot 'src\SendspinClient.Linux.Services\bin'),
-        (Join-Path $RepoRoot 'src\SendspinClient.Linux.Services\obj'),
-        (Join-Path $RepoRoot 'src\SendspinClient.Linux.Tests\bin'),
-        (Join-Path $RepoRoot 'src\SendspinClient.Linux.Tests\obj')
+        (Join-Path $RepoRoot 'src\Sendspin.Player\bin'),
+        (Join-Path $RepoRoot 'src\Sendspin.Player\obj'),
+        (Join-Path $RepoRoot 'src\Sendspin.Player.Services\bin'),
+        (Join-Path $RepoRoot 'src\Sendspin.Player.Services\obj'),
+        (Join-Path $RepoRoot 'src\Sendspin.Player.Tests\bin'),
+        (Join-Path $RepoRoot 'src\Sendspin.Player.Tests\obj')
     )
 
     foreach ($path in $cleanPaths) {
