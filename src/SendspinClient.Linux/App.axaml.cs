@@ -5,6 +5,8 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sendspin.Core.Platform;
+using Sendspin.Platform.Linux.Platform;
 using Sendspin.SDK.Audio;
 using SendspinClient.Linux.Configuration;
 using SendspinClient.Linux.ViewModels;
@@ -80,6 +82,14 @@ public partial class App : Application
     /// <summary>
     /// Configures the dependency injection container with all required services.
     /// </summary>
+    /// <remarks>
+    /// The cross-platform architecture uses IPlatformInitializer for platform-specific registration.
+    /// When migrating fully to the new architecture, replace the manual registrations below with:
+    /// <code>
+    /// var platformInitializer = new LinuxPlatformInitializer();
+    /// platformInitializer.RegisterServices(services);
+    /// </code>
+    /// </remarks>
     private void ConfigureServices()
     {
         var services = new ServiceCollection();

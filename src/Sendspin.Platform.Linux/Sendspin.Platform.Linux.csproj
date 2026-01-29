@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>Sendspin.Platform.Linux</RootNamespace>
+    <AssemblyName>Sendspin.Platform.Linux</AssemblyName>
+    <Description>Linux platform implementations for Sendspin client (OpenAL audio, D-Bus notifications)</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Audio Playback (Silk.NET OpenAL) -->
+    <PackageReference Include="Silk.NET.OpenAL" Version="2.22.0" />
+    <PackageReference Include="Silk.NET.OpenAL.Soft.Native" Version="1.23.1" />
+
+    <!-- Logging -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+
+    <!-- Sendspin SDK -->
+    <PackageReference Include="Sendspin.SDK" Version="6.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sendspin.Core\Sendspin.Core.csproj" />
+    <ProjectReference Include="..\Sendspin.Platform.Shared\Sendspin.Platform.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
