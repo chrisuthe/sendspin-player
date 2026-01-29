@@ -255,7 +255,7 @@ The GitHub Actions workflow (`.github/workflows/build.yml`) provides:
 | `build-windows` | Compile for win-x64, run tests |
 | `package-flatpak` | Create Flatpak bundle (on main/master) |
 | `package-appimage` | Create AppImage artifact (on main/master) |
-| `package-windows` | Create Windows ZIP archive (on main/master) |
+| `package-windows` | Create Windows portable package (on main/master) |
 
 ---
 

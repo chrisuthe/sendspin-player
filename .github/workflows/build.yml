@@ -230,27 +230,27 @@ jobs:
           retention-days: 14
 
   package-windows:
-    name: Package Windows
+    name: Package Windows Portable
     runs-on: windows-latest
     needs: build-windows
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
 
     steps:
-      - uses: actions/checkout@v4
-
       - name: Download build
         uses: actions/download-artifact@v4
         with:
           name: sendspin-player-win-x64
-          path: ./publish/win-x64
+          path: ./portable
 
-      - name: Create ZIP archive
+      - name: Clean up non-essential files
         run: |
-          Compress-Archive -Path ./publish/win-x64/* -DestinationPath Sendspin-Player-win-x64.zip
+          # Remove debug symbols and XML docs to reduce size
+          Remove-Item -Path ./portable/*.pdb -ErrorAction SilentlyContinue
+          Remove-Item -Path ./portable/*.xml -ErrorAction SilentlyContinue
 
-      - name: Upload ZIP
+      - name: Upload portable package
         uses: actions/upload-artifact@v4
         with:
-          name: sendspin-player-windows-zip
-          path: Sendspin-Player-win-x64.zip
+          name: Sendspin-Player-Windows-Portable
+          path: ./portable
           retention-days: 30
