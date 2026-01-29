@@ -184,7 +184,7 @@ curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l ~/.vsdbg
     "name": "Attach to Sendspin (Remote)",
     "type": "coreclr",
     "request": "attach",
-    "processName": "sendspin",
+    "processName": "Sendspin.Player",
     "pipeTransport": {
         "pipeCwd": "${workspaceFolder}",
         "pipeProgram": "ssh",
@@ -243,36 +243,19 @@ make packages          # Build all formats
 The GitHub Actions workflow (`.github/workflows/build.yml`) provides:
 
 ### Triggers
-- Push to `master`, `main`, or `develop` branches
+- Push to `master` or `main` branches
 - Pull requests to `master` or `main`
-- Git tags matching `v*` (releases)
 - Manual workflow dispatch
 
 ### Jobs
 
 | Job | Description |
 |-----|-------------|
-| `build` | Compile for linux-x64 and linux-arm64 |
-| `test` | Run unit tests with coverage |
-| `security` | CodeQL analysis and dependency review |
-| `package-appimage` | Create AppImage artifacts |
-| `package-deb` | Create .deb packages |
-| `package-flatpak` | Create Flatpak bundle |
-| `release` | Create GitHub release with all artifacts |
-
-### Creating a Release
-
-```bash
-# Tag and push to trigger release
-git tag v1.2.3
-git push origin v1.2.3
-```
-
-The workflow will automatically:
-1. Build for all architectures
-2. Run tests and security scans
-3. Create AppImage, .deb, and Flatpak packages
-4. Upload to GitHub Releases with checksums
+| `build-linux` | Compile for linux-x64 and linux-arm64, run tests |
+| `build-windows` | Compile for win-x64, run tests |
+| `package-flatpak` | Create Flatpak bundle (on main/master) |
+| `package-appimage` | Create AppImage artifact (on main/master) |
+| `package-windows` | Create Windows ZIP archive (on main/master) |
 
 ---
 
@@ -436,7 +419,6 @@ systemctl --user restart pipewire
 
 ## Related Projects
 
-- [Sendspin Windows Client](https://github.com/chrisuthe/windowsSpin) - Windows WPF client
 - [Sendspin CLI](https://github.com/chrisuthe/sendspin-cli) - Python CLI reference implementation
 - [Music Assistant](https://music-assistant.io/) - The server this client connects to
 
