@@ -6,15 +6,14 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sendspin.Core.Platform;
-using Sendspin.Platform.Linux.Platform;
-using Sendspin.SDK.Audio;
-using SendspinClient.Linux.Configuration;
 using SendspinClient.Linux.ViewModels;
-using SendspinClient.Linux.Services.Audio;
-using SendspinClient.Linux.Services.Audio.Interfaces;
 using SendspinClient.Linux.Services.Client;
-using SendspinClient.Linux.Services.Discord;
-using SendspinClient.Linux.Services.Notifications;
+
+#if WINDOWS
+using Sendspin.Platform.Windows.Platform;
+#else
+using Sendspin.Platform.Linux.Platform;
+#endif
 
 namespace SendspinClient.Linux;
 
@@ -59,9 +58,9 @@ public partial class App : Application
         // Configure and build services
         ConfigureServices();
 
-        // Ensure XDG directories exist
-        var appPaths = Services.GetRequiredService<AppPaths>();
-        appPaths.EnsureDirectoriesExist();
+        // Ensure platform-specific directories exist
+        var paths = Services.GetRequiredService<IPlatformPaths>();
+        paths.EnsureDirectoriesExist();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -83,12 +82,9 @@ public partial class App : Application
     /// Configures the dependency injection container with all required services.
     /// </summary>
     /// <remarks>
-    /// The cross-platform architecture uses IPlatformInitializer for platform-specific registration.
-    /// When migrating fully to the new architecture, replace the manual registrations below with:
-    /// <code>
-    /// var platformInitializer = new LinuxPlatformInitializer();
-    /// platformInitializer.RegisterServices(services);
-    /// </code>
+    /// Uses the cross-platform architecture with IPlatformInitializer for platform-specific
+    /// service registration. The platform is detected at runtime and the appropriate
+    /// initializer is used.
     /// </remarks>
     private void ConfigureServices()
     {
@@ -101,39 +97,28 @@ public partial class App : Application
             builder.AddConsole();
         });
 
-        // Configuration
-        services.AddSingleton<AppPaths>();
+        // Select platform-specific initializer based on compile-time target
+#if WINDOWS
+        IPlatformInitializer platformInitializer = new WindowsPlatformInitializer();
+#else
+        IPlatformInitializer platformInitializer = new LinuxPlatformInitializer();
+#endif
 
-        // Audio services - Transient because AudioPipeline creates/disposes players per stream
-        services.AddTransient<IAudioPlayer>(sp =>
-        {
-            var logger = sp.GetRequiredService<ILogger<OpenALAudioPlayer>>();
-            return new OpenALAudioPlayer(logger);
-        });
-
-        // Device enumerator (singleton for UI queries)
-        services.AddSingleton<IAudioDeviceEnumerator>(sp =>
-        {
-            var logger = sp.GetRequiredService<ILogger<OpenALAudioPlayer>>();
-            return new OpenALAudioPlayer(logger);
-        });
+        // Register all platform-specific services (audio, notifications, paths, etc.)
+        platformInitializer.RegisterServices(services);
 
         // Sendspin client manager - orchestrates SDK components
+        // Uses the platform-specific audio player via the factory from the initializer
         services.AddSingleton<SendspinClientManager>(sp =>
         {
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            // Player factory creates new players for each audio stream
-            IAudioPlayer PlayerFactory()
+            // Player factory uses the platform-specific IAudioPlayer registration
+            Sendspin.SDK.Audio.IAudioPlayer PlayerFactory()
             {
-                var logger = sp.GetRequiredService<ILogger<OpenALAudioPlayer>>();
-                return new OpenALAudioPlayer(logger);
+                return sp.GetRequiredService<Sendspin.SDK.Audio.IAudioPlayer>();
             }
             return new SendspinClientManager(loggerFactory, PlayerFactory);
         });
-
-        // Platform services
-        services.AddSingleton<INotificationService, DBusNotificationService>();
-        services.AddSingleton<IDiscordRichPresenceService, DiscordRichPresenceService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();
@@ -142,7 +127,11 @@ public partial class App : Application
         _serviceProvider = services.BuildServiceProvider();
 
         var logger = _serviceProvider.GetRequiredService<ILogger<App>>();
+#if WINDOWS
+        logger.LogInformation("Sendspin Windows client initialized");
+#else
         logger.LogInformation("Sendspin Linux client initialized");
+#endif
     }
 
     /// <summary>
@@ -151,7 +140,11 @@ public partial class App : Application
     private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
     {
         var logger = Services.GetService<ILogger<App>>();
+#if WINDOWS
+        logger?.LogInformation("Sendspin Windows client shutting down");
+#else
         logger?.LogInformation("Sendspin Linux client shutting down");
+#endif
 
         // Dispose the service provider if it implements IDisposable
         if (_serviceProvider is IDisposable disposable)
