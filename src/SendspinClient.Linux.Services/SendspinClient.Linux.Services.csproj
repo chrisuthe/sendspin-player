@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <!-- Audio Playback (Silk.NET OpenAL - actively maintained) -->
-    <PackageReference Include="Sendspin.SDK" Version="5.*" />
+    <PackageReference Include="Sendspin.SDK" Version="6.*" />
     <PackageReference Include="Silk.NET.OpenAL" Version="2.22.0" />
     <PackageReference Include="Silk.NET.OpenAL.Soft.Native" Version="1.23.1" />
 

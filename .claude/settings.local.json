@@ -3,7 +3,10 @@
     "allow": [
       "Bash(dotnet build:*)",
       "Bash(dotnet publish:*)",
-      "Bash(dotnet add:*)"
+      "Bash(dotnet add:*)",
+      "Bash(mount:*)",
+      "Read(//mnt/**)",
+      "Read(//home/chris/.nuget/packages/**)"
     ]
   }
 }

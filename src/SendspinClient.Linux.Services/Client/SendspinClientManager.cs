@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Sendspin.SDK.Audio;
 using Sendspin.SDK.Client;
@@ -30,11 +31,6 @@ public sealed class SendspinClientManager : IAsyncDisposable
     private bool _isDisposed;
 
     /// <summary>
-    /// Fired when a server is discovered on the network.
-    /// </summary>
-    public event EventHandler<DiscoveredServer>? ServerDiscovered;
-
-    /// <summary>
     /// Fired when a previously discovered server is lost.
     /// </summary>
     public event EventHandler<DiscoveredServer>? ServerLost;
@@ -58,6 +54,12 @@ public sealed class SendspinClientManager : IAsyncDisposable
     /// Fired when playback state changes (playing/paused/stopped).
     /// </summary>
     public event EventHandler<PlaybackStateEventArgs>? PlaybackStateChanged;
+
+    /// <summary>
+    /// Fired when a server has been verified via discovery handshake.
+    /// Only verified (reachable) servers should be shown to users.
+    /// </summary>
+    public event EventHandler<ProbedServerInfo>? ServerVerified;
 
     /// <summary>
     /// Gets whether the client is currently connected to a server.
@@ -120,6 +122,137 @@ public sealed class SendspinClientManager : IAsyncDisposable
     public IReadOnlyList<DiscoveredServer> GetDiscoveredServers()
     {
         return _discovery?.Servers.ToList() ?? [];
+    }
+
+    /// <summary>
+    /// Probes a discovered server to verify it's reachable and get authoritative info.
+    /// Uses raw WebSocket to perform lightweight handshake without full SDK setup.
+    /// </summary>
+    public async Task<ProbedServerInfo?> ProbeServerAsync(DiscoveredServer server, CancellationToken ct = default)
+    {
+        var host = server.IpAddresses.FirstOrDefault() ?? server.Host;
+        var uri = new Uri($"ws://{host}:{server.Port}/sendspin");
+
+        _logger.LogDebug("Probing server at {Uri} (IPs: {IpAddresses})", uri, string.Join(", ", server.IpAddresses));
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromSeconds(5)); // 5 second timeout for probe
+
+        using var ws = new System.Net.WebSockets.ClientWebSocket();
+
+        try
+        {
+            // Connect
+            _logger.LogDebug("Connecting WebSocket to {Uri}...", uri);
+            await ws.ConnectAsync(uri, cts.Token);
+            _logger.LogDebug("WebSocket connected, sending client/hello...");
+
+            // Send client/hello
+            var clientHello = CreateClientHelloJson();
+            _logger.LogDebug("Sending: {Message}", clientHello);
+            var sendBuffer = System.Text.Encoding.UTF8.GetBytes(clientHello);
+            await ws.SendAsync(sendBuffer, System.Net.WebSockets.WebSocketMessageType.Text, true, cts.Token);
+            _logger.LogDebug("client/hello sent, waiting for server/hello...");
+
+            // Receive server/hello
+            var receiveBuffer = new byte[4096];
+            var result = await ws.ReceiveAsync(receiveBuffer, cts.Token);
+            _logger.LogDebug("Received message: type={Type}, count={Count}", result.MessageType, result.Count);
+
+            if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Text)
+            {
+                var json = System.Text.Encoding.UTF8.GetString(receiveBuffer, 0, result.Count);
+                return ParseServerHello(json, server);
+            }
+
+            return null;
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogDebug("Probe timed out for {Server}", server.Name);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Probe failed for {Server}", server.Name);
+            return null;
+        }
+        finally
+        {
+            if (ws.State == System.Net.WebSockets.WebSocketState.Open)
+            {
+                try
+                {
+                    await ws.CloseAsync(
+                        System.Net.WebSockets.WebSocketCloseStatus.NormalClosure,
+                        "probe complete",
+                        CancellationToken.None);
+                }
+                catch
+                {
+                    // Ignore close errors
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates a minimal client/hello JSON for probing.
+    /// </summary>
+    private static string CreateClientHelloJson()
+    {
+        var clientId = $"sendspin-linux-{Environment.MachineName.ToLowerInvariant()}";
+        return $@"{{""type"":""client/hello"",""payload"":{{""client_id"":""{clientId}"",""name"":""Sendspin Linux"",""version"":1,""supported_roles"":[""player@v1""]}}}}";
+    }
+
+    /// <summary>
+    /// Parses a server/hello message to extract server info.
+    /// </summary>
+    private ProbedServerInfo? ParseServerHello(string json, DiscoveredServer server)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            if (!root.TryGetProperty("type", out var typeProp) ||
+                typeProp.GetString() != "server/hello")
+            {
+                _logger.LogDebug("Expected server/hello but got: {Type}", typeProp.GetString());
+                return null;
+            }
+
+            var serverId = root.TryGetProperty("server_id", out var idProp)
+                ? idProp.GetString() ?? server.ServerId
+                : server.ServerId;
+
+            var name = root.TryGetProperty("name", out var nameProp)
+                ? nameProp.GetString() ?? server.Name
+                : server.Name;
+
+            string? connectionReason = null;
+            if (root.TryGetProperty("payload", out var payload) &&
+                payload.TryGetProperty("connection_reason", out var reasonProp))
+            {
+                connectionReason = reasonProp.GetString();
+            }
+
+            _logger.LogDebug("Parsed server/hello: id={ServerId}, name={Name}", serverId, name);
+
+            return new ProbedServerInfo(
+                serverId,
+                name,
+                server.Host,
+                server.Port,
+                server.IpAddresses.ToList(),
+                connectionReason,
+                server);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogDebug(ex, "Failed to parse server/hello JSON");
+            return null;
+        }
     }
 
     /// <summary>
@@ -368,9 +501,39 @@ public sealed class SendspinClientManager : IAsyncDisposable
 
     private void OnServerFound(object? sender, DiscoveredServer server)
     {
-        _logger.LogInformation("Discovered server: {Name} at {Host}:{Port}",
+        _logger.LogInformation("Discovered server via mDNS: {Name} at {Host}:{Port}",
             server.Name, server.Host, server.Port);
-        ServerDiscovered?.Invoke(this, server);
+
+        // Immediately show server with mDNS info
+        var initialInfo = new ProbedServerInfo(
+            server.ServerId,
+            server.Name,
+            server.Host,
+            server.Port,
+            server.IpAddresses.ToList(),
+            null,  // Connection reason not yet known
+            server);
+        ServerVerified?.Invoke(this, initialInfo);
+
+        // Probe in background to get authoritative name (optional enhancement)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var info = await ProbeServerAsync(server);
+                if (info != null && info.Name != server.Name)
+                {
+                    _logger.LogInformation("Probe updated server name: {OldName} -> {NewName}",
+                        server.Name, info.Name);
+                    // Fire event again with updated info - UI can update the name
+                    ServerVerified?.Invoke(this, info);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Background probe failed for {Server}", server.Name);
+            }
+        });
     }
 
     private void OnServerLost(object? sender, DiscoveredServer server)

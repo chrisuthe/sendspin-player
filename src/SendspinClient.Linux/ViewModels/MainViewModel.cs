@@ -1,13 +1,14 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using Sendspin.SDK.Discovery;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using Sendspin.SDK.Discovery;
 using SendspinClient.Linux.Services.Client;
 using SendspinClient.Linux.Services.Discord;
 using SendspinClient.Linux.Services.Notifications;
@@ -111,12 +112,13 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
-    private DiscoveredServer? _selectedServer;
+    private ProbedServerInfo? _selectedServer;
 
     /// <summary>
-    /// Gets the list of discovered servers.
+    /// Gets the list of verified (reachable) servers.
+    /// Servers only appear here after successful discovery handshake.
     /// </summary>
-    public ObservableCollection<DiscoveredServer> DiscoveredServers { get; } = new();
+    public ObservableCollection<ProbedServerInfo> DiscoveredServers { get; } = new();
 
     #endregion
 
@@ -172,7 +174,7 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
         _discordService = discordService;
 
         // Subscribe to client manager events
-        _clientManager.ServerDiscovered += OnServerDiscovered;
+        _clientManager.ServerVerified += OnServerVerified;
         _clientManager.ServerLost += OnServerLost;
         _clientManager.ConnectionStateChanged += OnConnectionStateChanged;
         _clientManager.TrackChanged += OnTrackChanged;
@@ -230,14 +232,36 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
-    private void OnServerDiscovered(object? sender, DiscoveredServer server)
+    private void OnServerVerified(object? sender, ProbedServerInfo server)
     {
         if (_isDisposed) return;
         Dispatcher.UIThread.Post(() =>
         {
             if (_isDisposed) return;
-            if (!DiscoveredServers.Contains(server))
+
+            // Check if server already exists
+            var existingIndex = -1;
+            for (int i = 0; i < DiscoveredServers.Count; i++)
             {
+                if (DiscoveredServers[i].ServerId == server.ServerId)
+                {
+                    existingIndex = i;
+                    break;
+                }
+            }
+
+            if (existingIndex >= 0)
+            {
+                // Update existing server (e.g., name from probe)
+                if (DiscoveredServers[existingIndex].Name != server.Name)
+                {
+                    DiscoveredServers[existingIndex] = server;
+                    _logger?.LogInformation("Updated server name: {Name}", server.Name);
+                }
+            }
+            else
+            {
+                // Add new server
                 DiscoveredServers.Add(server);
                 _logger?.LogInformation("Added server to list: {Name}", server.Name);
             }
@@ -250,8 +274,13 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
         Dispatcher.UIThread.Post(() =>
         {
             if (_isDisposed) return;
-            DiscoveredServers.Remove(server);
-            _logger?.LogInformation("Removed server from list: {Name}", server.Name);
+            // Find by ServerId since we store ProbedServerInfo not DiscoveredServer
+            var existing = DiscoveredServers.FirstOrDefault(s => s.ServerId == server.ServerId);
+            if (existing != null)
+            {
+                DiscoveredServers.Remove(existing);
+                _logger?.LogInformation("Removed server from list: {Name}", server.Name);
+            }
         });
     }
 
@@ -280,7 +309,7 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
             IsConnecting = true;
             _logger?.LogInformation("Connecting to server: {Name}", server.Name);
 
-            await _clientManager.ConnectAsync(server);
+            await _clientManager.ConnectAsync(server.OriginalServer);
         }
         catch (Exception ex)
         {
@@ -545,7 +574,7 @@ public partial class MainViewModel : ObservableObject, IAsyncDisposable
 
         if (_clientManager != null)
         {
-            _clientManager.ServerDiscovered -= OnServerDiscovered;
+            _clientManager.ServerVerified -= OnServerVerified;
             _clientManager.ServerLost -= OnServerLost;
             _clientManager.ConnectionStateChanged -= OnConnectionStateChanged;
             _clientManager.TrackChanged -= OnTrackChanged;
